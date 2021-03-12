@@ -30,7 +30,8 @@
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
 
-(setq org-directory "~/Thinking/Org")
+(setq org-directory "~/Think/Org")
+(setq org-noter-notes-search-path '("~/Think/Org/roam/"))
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
 (setq display-line-numbers-type t)
@@ -73,7 +74,7 @@
 (use-package org-download
   :after org
   :config
-  (setq-default org-download-image-dir "/home/samon/Thinking/Org/pic")
+  (setq-default org-download-image-dir "/home/samon/Think/Org/pic")
   :bind
   (:map org-mode-map
         (("s-Y" . org-download-screenshot)
@@ -93,9 +94,21 @@
         org-roam-server-network-label-truncate t
         org-roam-server-network-label-truncate-length 60
         org-roam-server-network-label-wrap-length 20))
+(use-package org-journal
+  :ensure t
+  :defer t
+  :init
+  ;; Change default prefix key; needs to be set before loading org-journal
+  :config
+  (setq org-journal-dir "~/Think/Org/journal/"
+        org-journal-date-format "%A, %d %B %Y")
+  (setq org-journal-time-prefix "** " ))
+(require 'org-roam-protocol)
+(require 'ox-freemind)
+(setq org-export-backends '(freemind odt latex icalendar html ascii))
 (add-to-list 'org-capture-templates
              '("w" "Web site" entry
-              (file "~/Thinking/Org/web.org" )
+              (file "~/Think/Org/web.org" )
               "* %a :website:\n\n%U %?\n\n%:initial"))
 (use-package sdcv
   :bind ("C-c f" . sdcv-search-pointer+)
@@ -116,13 +129,50 @@
 (use-package org-super-agenda
   :after org-agenda
   :init
-  (setq org-super-agenda-groups'((:name "Today"
+  (setq org-super-agenda-groups'((:name "Urgency"
                                   :time-grid t
-                                  :scheduled today)))
+                                  :property "A")))
   :config
   (org-super-agenda-mode))
 
+(use-package calibredb
+  :defer t
+  :init
+  (autoload 'calibredb "calibredb")
+  :config
+  (setq calibredb-root-dir "/home/samon/Calibre_Library/")
+  (setq calibredb-db-dir (expand-file-name "metadata.db" calibredb-root-dir))
+  (setq calibredb-library-alist '(("/home/samon/Calibre_Library/")
+                                  )))
+(use-package hypothesis
+  :init
+  (setq hypothesis-username "samon6bl")
+  (setq hypothesis-token "6879-2sB-ygcUO2v4NRNfuunqiq1rnzFtfyPwFDx5QR9h0rc"))
 
+;; org-roam任务动态添加到agenda
+(defvar dynamic-agenda-files nil
+  "dynamic generate agenda files list when changing org state")
+
+(defun update-dynamic-agenda-hook ()
+  (let ((done (or (not org-state) ;; nil when no TODO list
+                  (member org-state org-done-keywords)))
+        (file (buffer-file-name))
+        (agenda (funcall (ad-get-orig-definition 'org-agenda-files)) ))
+    (unless (member file agenda)
+      (if done
+          (save-excursion
+            (goto-char (point-min))
+            ;; Delete file from dynamic files when all TODO entry changed to DONE
+            (unless (search-forward-regexp org-not-done-heading-regexp nil t)
+              (customize-save-variable
+               'dynamic-agenda-files
+               (cl-delete-if (lambda (k) (string= k file))
+                             dynamic-agenda-files))))
+        ;; Add this file to dynamic agenda files
+        (unless (member file dynamic-agenda-files)
+          (customize-save-variable 'dynamic-agenda-files
+                                   (add-to-list 'dynamic-agenda-files file)))))))
 ;; --------------------------------------------------------------------------------------------------------------------------
 
+(add-to-list 'auto-mode-alist '("\\.epub\\'" . nov-mode))
 ;; ------------------------------------------------- 快捷键的全部配置 ---------------------------------------------------------

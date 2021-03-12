@@ -59,3 +59,10 @@
 (package! sdcv
   :recipe (:host github :repo "manateelazycat/sdcv"))
 (package! org-super-agenda)
+(package! calibredb)
+(package! nov)
+(package! moe-theme)
+(package! ranger)
+(package! request)
+(package! hypothesis
+  :recipe(:host github :repo "Kungsgeten/hypothesis"))
