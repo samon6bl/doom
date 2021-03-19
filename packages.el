@@ -66,3 +66,7 @@
 (package! request)
 (package! hypothesis
   :recipe(:host github :repo "Kungsgeten/hypothesis"))
+(package! org-protocol-capture-html
+  :recipe(:host github :repo "alphapapa/org-protocol-capture-html"))
+(package! emacs-calfw
+  :recipe(:host github :repo "kiwanami/emacs-calfw"))
