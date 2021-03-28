@@ -70,3 +70,4 @@
   :recipe(:host github :repo "alphapapa/org-protocol-capture-html"))
 (package! emacs-calfw
   :recipe(:host github :repo "kiwanami/emacs-calfw"))
+(package! leuven-theme)
