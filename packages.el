@@ -71,3 +71,13 @@
 (package! emacs-calfw
   :recipe(:host github :repo "kiwanami/emacs-calfw"))
 (package! leuven-theme)
+(package! anki-editor)
+(package! material-theme)
+(package! shrface)
+(package! company-english-helper
+  :recipe(:host github :repo "manateelazycat/company-english-helper"))
+(package! insert-translated-name
+  :recipe(:host github :repo "manateelazycat/insert-translated-name"))
+(package! imenu-list)
+(package! persist)
+(package! alert)

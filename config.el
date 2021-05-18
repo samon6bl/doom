@@ -25,7 +25,7 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-gruvbox)
+(setq doom-theme 'doom-zenburn)
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
@@ -74,6 +74,7 @@
   :after org
   :config
   (setq-default org-download-image-dir "/home/samon/Think/Org/pic")
+  (setq org-download-annotate-function (lambda (_link) ""))
   :bind
   (:map org-mode-map
         (("s-Y" . org-download-screenshot)
@@ -101,7 +102,8 @@
   :config
   (setq org-journal-dir "~/Think/Org/journal/"
         org-journal-date-format "%A, %d %B %Y")
-  (setq org-journal-time-prefix "** " ))
+  (setq org-journal-time-prefix "** " )
+  (setq org-journal-file-format "%Y%m%d.org"))
 (server-start)
 (require 'org-roam-protocol)
 (require 'org-protocol-capture-html)
@@ -202,6 +204,87 @@
    )
 (use-package ox-hugo
   :after ox)
-;; --------------------------------------------------------------------------------------------------------------------------
+(use-package anki-editor
+  :ensure t)
 
-;; ------------------------------------------------- 快捷键的全部配置 ---------------------------------------------------------
+;;http proxy
+(setq url-proxy-services
+      '(("no_proxy" . "^\\(localhost\\|10\\..*\\|192\\.168\\..*\\)")
+        ("http" . "127.0.0.1:8889")
+        ("https" . "127.0.0.1:8889")))
+(setq org-emphasis-regexp-components '("-[:multibyte:][:space:]('\"{" "-[:multibyte:][:space:].,:!?;'\")}\\[" "[:space:]" "." 1))
+(org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components)
+(org-element-update-syntax)
+
+(use-package shrface
+  :defer t
+  :config
+  (shrface-basic)
+  (shrface-trial)
+  (shrface-default-keybindings) ; setup default keybindings
+  (setq shrface-href-versatile t))
+
+(use-package eww
+  :defer t
+  :init
+  (add-hook 'eww-after-render-hook #'shrface-mode)
+  :config
+  (require 'shrface))
+
+(use-package nov
+  :defer t
+  :init
+  (add-hook 'nov-mode-hook #'shrface-mode)
+  :config
+  (require 'shrface)
+  (setq nov-shr-rendering-functions '((img . nov-render-img) (title . nov-render-title)))
+  (setq nov-shr-rendering-functions (append nov-shr-rendering-functions shr-external-rendering-functions)))
+
+(use-package anki
+  :defer t
+  :load-path "~/.emacs.d/lisp/anki/"
+  :init
+  (add-hook 'anki-mode-hook #'shrface-mode)
+  (autoload 'anki "anki")
+  (autoload 'anki-browser "anki")
+  (autoload 'anki-list-decks "anki")
+  :config
+  (require 'shrface)
+  (setq anki-shr-rendering-functions (append anki-shr-rendering-functions shr-external-rendering-functions))
+  (setq sql-sqlite-program "/usr/bin/sqlite3")
+  (setq anki-collection-dir "/Users/chandamon/Library/Application Support/Anki2/User 1"))
+(use-package company-english-helper)
+(use-package insert-translated-name)
+(use-package imenu-list
+  :config
+  (map! :leader :n "=" 'imenu-list-smart-toggle)
+  (setq imenu-list-focus-after-activation t)
+  (setq imenu-list-auto-resize t)
+  (setq imenu-list-after-jump-hook nil))
+(setq org-hide-emphasis-markers t)
+(setq org-appear-autolinks t)
+(use-package org-gcal
+  :config
+  (setq org-gcal-client-id "446084865343-ga9ssmhdo7hihs89s7hllh96oebavu3b.apps.googleusercontent.com"
+      org-gcal-client-secret "Hdahns1rpBMaDHoQcm7-sD5e"
+      org-gcal-fetch-file-alist '("vh7h06emhtqog20apv9bqg004g@group.calendar.google.com" .  "~/Think/Org/todo.org")
+      ))
+(setq url-proxy-services
+      '(("no_proxy" . "^\\(localhost\\|10\\..*\\|192\\.168\\..*\\)")
+        ("http" . "127.0.0.1:8889")
+        ("https" . "127.0.0.1:8889")))
+(setq gnutls-algorithm-priority "NORMAL:-VERS-TLS1.3")
+ (use-package org-fancy-priorities
+; :ensure t
+  :hook
+  (org-mode . org-fancy-priorities-mode)
+  :config
+   (setq org-fancy-priorities-list '("⚡" "⬆" "⬇" "☕")))
+;; -------------------------------------------------------------------------------------------------------------------------
+(setq  auto-save-buffer-idle-time
+       (run-with-idle-timer 30 t
+			    (lambda ()
+			      ;;(message "auto save all buffer.")
+			      (evil-write-all nil)
+			      )))
+;; ------------------------------------------------- 快捷键的全部配置 -----------------------------------------------------------
