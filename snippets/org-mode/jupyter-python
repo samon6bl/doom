@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: jupyter-python
+# key: jp
+# --
+#+begin_src jupyter-python
+$1
+#+end_src
