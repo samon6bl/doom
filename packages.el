@@ -50,8 +50,6 @@
 (package! valign)
 (package! separate-inline
   :recipe (:host github :repo "ingtshan/separate-inline.el"))
-(package! org-protocol-capture-html
-  :recipe (:host github :repo "alphapapa/org-protocol-capture-html"))
 (package! org-super-agenda)
 (package! org-fragtog
   :recipe (:host github :repo "io12/org-fragtog"))
@@ -69,7 +67,6 @@
   :recipe (:host github :repo "millejoh/emacs-ipython-notebook"))
 (package! org-gtd.el
   :recipe (:host github :repo "Trevoke/org-gtd.el"))
-(package! org-transclusion)
 (package! rime)
 (package! lsp-treemacs)
 (package! shrface)
@@ -84,39 +81,88 @@
 (package! org-modern)
 (package! org-modern-indent
   :recipe (:host github :repo "jdtsmith/org-modern-indent"))
-(package! mindre-theme)
 (package! modus-themes)
 (package! separate-inline
   :recipe (:host github :repo "ingtshan/separate-inline.el"))
 (package! org-appear)
 (package! request)
-(package! wallabag :recipe (:host github :repo "chenyanming/wallabag.el" :files ("*.el" "*.alist" "*.css")))
+(package! wallabag
+  :recipe (:host github :repo "chenyanming/wallabag.el" :files ("*.el" "*.alist" "*.css")))
 (package! emacsql)
-(package! org-notion
-  :recipe (:host github :repo "richardwesthaver/org-notion"))
 (package! org-ref)
 (package! doct)
 (package! ivy-bibtex)
 (package! easy-hugo)
 (package! org-roam-bibtex)
 (package! major-mode-hydra)
-(package! org-noter-plus :recipe (:host github :repo "yuchen-lea/org-noter-plus"))
+(package! org-noter-plus
+  :recipe (:host github :repo "yuchen-lea/org-noter-plus"))
 (package! org-pdftools)
 (package! org-noter-pdftools)
-(package! org-media-note :recipe (:host github :repo "yuchen-lea/org-media-note"))
+(package! org-media-note
+  :recipe (:host github :repo "yuchen-lea/org-media-note"))
 (package! zotxt)
 (package! fanyi)
-(package! org-mode
-  :recipe (:host github
-           :repo "yantar92/org"
-           :branch "feature/org-fold-universal-core"
-           :files ("*.el" "lisp/*.el")
-           :pre-build (with-temp-file (expand-file-name "org-version.el" (straight--repos-dir "org"))
-                        (insert "(fset 'org-release (lambda () \"9.5\"))\n"
-                                "(fset 'org-git-version #'ignore)\n"
-                                "(provide 'org-version)\n"))
-           :includes (org)))
+(package! ace-pinyin)
+(package! pyim)
 (package! pyim-tsinghua-dict
   :recipe (:host github :repo "redguardtoo/pyim-tsinghua-dict"))
 (package! org-remark)
 (package! mct)
+(package! ebuku)
+(package! all-the-icons-completion)
+(package! org-transclusion)
+(package! org-ql)
+(package! org-excalidraw
+  :recipe (:host github :repo "wdavew/org-excalidraw"))
+(package! org-sidebar
+  :recipe (:host github :repo "alphapapa/org-sidebar"))
+(package! org-kanban
+  :recipe (:host github :repo "gizmomogwai/org-kanban"))
+(package! bufler)
+(package! org-protocol-capture-html)
+(package! imenu-list)
+(package! xenops)
+(package! ZMQ)
+(package! org-latex-impatient)
+(package! ag)
+(package! ob-html
+  :recipe (:host github :repo "misohena/ob-html"))
+(package! templatel)
+(package! org-roam-search
+  :recipe (:host github
+          :repo "natask/org-roam-search"
+          :branch "master"))
+
+(package! sexp-string
+  :recipe (:host github
+          :repo "natask/sexp-string"
+          :branch "master"))
+
+(package!  delve
+  :recipe (:host github
+           :repo "publicimageltd/delve"
+           :branch "main"
+           :files ("*.el")))
+(package!  delve-show
+  :recipe (:host github
+           :repo "natask/delve-show"
+           :branch "master"
+           :files ("*.el")))
+(package! mixed-pitch)
+(package! elisp-demos)
+(package! sort-tab
+  :recipe (:host github
+           :repo "manateelazycat/sort-tab"))
+(package! org-superstar)
+(package! quickrun)
+(package! calfw)
+(package! blink-search
+  :recipe (:host github
+           :repo "manateelazycat/blink-search"))
+(package! md-roam
+  :recipe (:host github
+           :repo "nobiot/md-roam"))
+(package! orderless)
+(package! deadgrep)
+(package! telega)

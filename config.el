@@ -1,6 +1,11 @@
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 ;; Place your private configuration here! Remember, you do not need to run 'doom
 ;; sync' after modifying this file!
+;;
+;;
+(require 'loadhist)
+(file-dependents (feature-file 'cl))
+(add-to-list 'load-path "~/.emacs.d/site-lisp/websocket-bridge/")
 (menu-bar-mode -1)
 ;; (prefer-coding-system 'utf-8)
 ;; (set-default-coding-systems 'utf-8)
@@ -23,10 +28,8 @@
 ;;                 (select-frame new-frame)
 ;;                 ;; English Font
                 ;; (set-face-attribute 'default nil :font "Maple Mono SC NF" )))
-(set-fontset-font "fontset-default"
-             'han (font-spec :family "PingFang SC"
-                     :size 15))
-(setq-default org-indent-mode nil)
+                ;; (if (display-graphic-p)
+
 
 ;; Doom exposes five (optional) variables for controlling fonts in Doom:
 ;;
@@ -36,12 +39,9 @@
 ;;   presentations or streaming.
 ;; - `doom-unicode-font' -- for unicode glyphs
 ;; - `doom-serif-font' -- for the `fixed-pitch-serif' face
-;;
-;; See 'C-h v doom-font' for documentation and more examples of what they
+
+      ;; See 'C-h v doom-font' for documentation and more examples of what they
 ;; accept. For example:
-;;
-;;(setq doom-font (font-spec :family "Fira Code" :size 12 :weight 'semi-light)
-;;      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 13))
 ;;
 ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
 ;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
@@ -62,25 +62,24 @@
   ;; Load the theme files before enabling a theme
   (modus-themes-load-themes)
   :config
+(setq modus-themes-headings
+      '((1 . (variable-pitch 1.5))
+        (2 . (rainbow 1.3))
+        (3 . (1.1))
+        (t . (monochrome))))
   ;; Load the theme of your choice:
   (modus-themes-load-operandi) ;; OR (modus-themes-load-vivendi)
-  :bind ("<f5>" . modus-themes-toggle))
+  :bind ("<f5>" . modus-themes-toggle)
+  )
 
 
-;; (use-package mindre-theme
-;;     :custom
-;;     (mindre-use-more-bold nil)
-;;     (mindre-use-faded-lisp-parens t)
-;;     :config
-;;     (load-theme 'mindre t))
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
 (setq display-line-numbers-type t)
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
-(setq org-directory "/Users/Samon/Library/Mobile Documents/iCloud~com~logseq~logseq/Documents/")
-
+(setq org-directory "/Users/Samon/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/")
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
 ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
 ;;
@@ -126,21 +125,21 @@
              org-roam-node-find)
   :init
   (setq org-roam-db-location (expand-file-name ".cache/org-roam.db" user-emacs-directory))
-  (setq org-roam-file-extensions '("org"))
-
+  (setq org-roam-file-extensions '("org" "md")) ; enable Org-roam for a markdown extension
   (setq org-id-link-to-org-use-id t)
-
-
-
   (setq org-roam-completion-everywhere t)
-
   (setq org-roam-directory (concat org-directory "pages/"))
   ;; disable V1 to V2
   (setq org-roam-v2-ack t)
-  (org-roam-db-autosync-enable)
   :config
   (setq org-roam-completion-everywhere nil))
 
+(use-package md-roam
+  :init
+  (md-roam-mode 1)
+  (setq md-roam-file-extension "md") ; default "md". Specify an extension such as "markdown"
+  (org-roam-db-autosync-mode 1)
+)
 (add-hook 'org-mode-hook #'valign-mode)
 
 ;;     (defun my-org-download-method  (link)
@@ -160,24 +159,17 @@
 (use-package org-download
   :hook ((org-mode dired-mode) . org-download-enable)
   :bind (:map org-mode-map
-              ("<f2>" . org-download-screenshot))
+              ("<f4>" . org-download-screenshot))
+  :init
+  (org-download-enable)
   :config
-  (defun my/org-download-method (link)
-    "store image to <currentBufferFileName>.assets/ directory and with timestamp
-as its filename"
-    (setq filename (concat "img_" (format-time-string "%Y%m%d_%H%M%S") ".png"))
-    (setq dirname (concat (buffer-name) ".assets"))
-    ;; if directory not exist, create it
-    (unless (file-exists-p dirname)
-      (make-directory dirname))
-    (concat dirname "/" filename))
-  (setq org-download-method 'my/org-download-method)
-(setq org-download-image-attr-list
-      '("#+ATTR_ORG: :width 500px :align center"))
-(setq-default org-download-heading-lvl 'nil)
-(setq org-download-link-format "[[file:%s]]")
-(setq org-download-display-inline-images 'posframe)
-
+  (setq org-download-display-inline-images 'posframe)
+  (setq org-download-screenshot-file (concat temporary-file-directory "image.png"))
+  (setq org-download-method 'attach)
+  (setq org-download-image-attr-list
+      '("#+ATTR_ORG: :width 400px :align center"))
+  (setq-default org-download-heading-lvl 'nil)
+  (setq org-download-link-format "[[file:%s]]")
   )
 ;; 中文行内强调
 (add-hook 'org-mode-hook 'separate-inline-mode)
@@ -186,6 +178,7 @@ as its filename"
             (add-hook 'separate-inline-mode-hook
                       'separate-inline-use-default-rules-for-org-local
                       nil 'make-it-local)))
+
 (defun separate-inline-use-default-rules-for-org-local ()
   "A tested rules for Chinese user to separate inline in org-mode.
 org-mode 中文行内分隔规格"
@@ -224,40 +217,63 @@ org-mode 中文行内分隔规格"
   ;; Change default prefix key; needs to be set before loading org-journal
   (setq org-journal-prefix-key "C-c j ")
   :config
-  (setq org-journal-dir (concat org-directory "journals")
-        org-journal-file-format "%Y_%m_%d.org"))
+  (setq org-journal-dir (concat org-directory "/journals"))
+  (setq org-journal-file-format "%Y_%m_%d.org")
+  (setq org-journal-file-type 'daily))
+
 (after! org
   (setq org-agenda-files
         (directory-files-recursively
-         (concat org-directory "Agenda") "\\.org$"))
-(setq org-todo-keywords '((sequence "TODO(t)" "PROJ(p)" "LOOP(r)" "DOING(s)" "WAIT(w)" "HOLD(h)" "IDEA(i)" "|" "DONE(d)" "KILL(k)")
- (sequence "[ ](T)" "[-](S)" "[?](W)" "|" "[X](D)")
- (sequence "|" "OKAY(o)" "YES(y)" "NO(n)"))
+         (concat org-directory "/pages/Agenda") "\\.org$"))
+(setq org-todo-keywords '((sequence "IDEA(i)" "TODO(t!)"  "LOOP(r)" "PROG(p!)" "WAIT(w@)" "HOLD(h@)" "|" "DONE(d@)" "KILL(k@)" "CANCLE(c@)"))
 ))
 
 
 (server-start)
 (use-package s)
-(use-package org-protocol-capture-html)
+
 ;; org-capture-tmplates
+(use-package org-protocol-capture-html)
 (setq! org-capture-templates
-             '(("w" "Web site" entry
-              (file+headline  "/Users/Samon/Library/Mobile Documents/iCloud~com~logseq~logseq/Documents/Agenda/web.org" "Read_list")
-              "** To_Read %a :webtoread:\n\n%U %?\n\n%:initial")
-             ("t" "Personal todo" entry
-              (file+headline "/Users/Samon/Library/Mobile Documents/iCloud~com~logseq~logseq/Documents/Agenda/Inbox.org"  "TODO-BOX")
-              "** TODO %^{任务名称}  %^G \n %U \n - [ ] %?")
-             ("i" "Idea" entry
-              (file+headline  "/Users/Samon/Library/Mobile Documents/iCloud~com~logseq~logseq/Documents/Agenda/Idea.org" "IDEA-BOX")
-              "** IDEA %^{IDEA}  %^G \n %U \n - [ ] %?")))
+       (doct '(("Todo task" :keys "t"
+                :file "/Users/Samon/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/pages/Agenda/TODO_BOX.org"
+                :type plain
+                :template ("** %{todo-state} %^{Task}"
+                           "DEADLINE: %^T SCHEDULE: %^T"
+                           ":PROPERTIES:"
+                           ":Created: %U"
+                           ":END:"
+                           "%?")
+                :children (("Todo capture to box" :keys "i"
+                            :todo-state "TODO")
+                           ("Todo now" :keys "t"
+                            :todo-state "DOING"
+                            :clock-in t)))
+               ("Get an idea" :keys "i"
+                :file "/Users/Samon/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/pages/Agenda/Idea.org"
+                :type plain
+                :template ("** IDEA %^{Idea}"
+                           ":PROPERTIES:"
+                           ":Created: %U"
+                           ":END:"
+                           "%?"))
+               ("Capture from Web" :keys "w"
+                :file "/Users/Samon/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/pages/20221128142407-web_capture_inbox.org"
+                :type plain
+                :template ("** %a"
+                           ":PROPERTIES:"
+                           ":ID: %(org-id-uuid)"
+                           ":END:"
+                           "%:initial"))
+               )))
 (add-to-list 'org-capture-templates
              `("a" "Anki" entry
-               (file+headline "/Users/Samon/Library/Mobile Documents/iCloud~com~logseq~logseq/Documents/pages/20221007211048-anki.org" "Inbox")
+               (file+headline "/Users/Samon/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/pages/20221007211048-anki.org" "Inbox")
                ,(concat "** %i \n"
                         "%(generate-anki-note-body)\n")))
 (add-to-list 'org-capture-templates
              `("x" "Anki Defalt" entry
-               (file+headline "/Users/Samon/Library/Mobile Documents/iCloud~com~logseq~logseq/Documents/pages/20221007211048-anki.org" "Inbox")
+               (file+headline "/Users/Samon/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/pages/20221007211048-anki.org" "Inbox")
                "** %f \n :PROPERTIES:\n:ANKI_DECK: Mega\n:ANKI_NOTE_TYPE: 三合一-new \n:END:\n*** 标题\n %?\n*** 摘录/正面\n%i\n*** 摘录/背面\n %i\n*** 挖空率\n*** 笔记\n*** Remarks\n*** MNLink\n*** MNMindMap"))
 (defun generate-anki-note-body ()
   (interactive)
@@ -305,12 +321,6 @@ org-mode 中文行内分隔规格"
   (setq lsp-ui-doc-show-with-cursor t)
   )
 
-;; (use-package lsp-pyright
-;;   :hook (python-mode . (lambda ()
-;;                          (setq lsp-diagnostics-provider :none) ;; don't use 'lsp as default flycheck checker, this will turn off the flycheck auto-start too.
-;;                          (setq flycheck-checker 'python-pyright) ;; use 'python-pyright instead as python checker.
-;;                          (global-flycheck-mode) ;; enable flycheck manually.
-;;                          (lsp-deferred))))
 ;; Org 下 Block美化
 ;; 如何在 Source Block 中像在语言 mode 中一样的缩进
 (after! org
@@ -340,9 +350,6 @@ org-mode 中文行内分隔规格"
 (setq org-html-doctype "html5")
 (setq org-html-head
       "<link rel='stylesheet' type='text/css' href='https://gongzhitaao.org/orgcss/org.css'/> ")
-;;如何直观展示 LaTeX 公式效果
-(use-package! org-fragtog
-  :hook (org-mode . org-fragtog-mode))
 ;;orgmode 的表格如何中英文混排对齐
 (use-package! valign
   :config
@@ -350,42 +357,58 @@ org-mode 中文行内分隔规格"
   (add-hook 'org-mode-hook #'valign-mode))
 ;;如何在完成任务时自动打上完成时间的标签
 (after! org
-  (setq org-log-done t))
+  (setq org-log-done t)
+  (setq org-log-into-drawer t)
+(setq org-hide-emphasis-markers t))
 ;; Possible values are:
 
 ;;   nil     Don't add anything, just change the keyword
 ;;   time    (or t) Add a time stamp to the task
 ;;   note    Prompt for a note and add it with template org-log-note-headings
 ;; 隐藏Org－emphaisis标记
-(setq org-hide-emphasis-markers t)
 ;;如何设置记录 log 信息到 drawer 中?
-(after! org
-  (setq org-log-into-drawer t))
 ;;让任务的Property可以被子任务继承
 (after! org
   (setq org-use-property-inheritance t))
 (map! :leader :n "j" #'avy-goto-char-2)
+(map! :leader :n "I" #'org-capture)
 
 ;;如何跳转时支持汉字拼音
 (use-package! ace-pinyin
-  :config(dirvish-override-dired-mode)
+  :config
   (ace-pinyin-global-mode +1))
+(use-package dirvish
+  :config
+  (setq dirvish-hide-details nil)
+  ;; Placement
+;; (setq dirvish-use-header-line nil)     ; hide header line (show the classic dired header)
+;; (setq dirvish-use-mode-line nil)       ; hide mode line
+(setq dirvish-use-header-line 'global)    ; make header line span all panes
+
+;; Height
+;;; '(25 . 35) means
+;;;   - height in single window sessions is 25
+;;;   - height in full-frame sessions is 35
+(setq dirvish-header-line-height '(25 . 35))
+(setq dirvish-mode-line-height 25) ; shorthand for '(25 . 25)
+
+;; Segments
+;;; 1. the order of segments *matters* here
+;;; 2. it's ok to place raw string inside
+(setq dirvish-header-line-format
+      '(:left (path) :right (free-space))
+      dirvish-mode-line-format
+      '(:left (sort file-time " " file-size symlink) :right (omit yank index))))
 (dirvish-override-dired-mode)
 (use-package hydra)
 (use-package super-save
   :config
   (super-save-mode +1))
-;; (org-babel-do-load-languages
-;;  'org-babel-load-languages
-;;  '((emacs-lisp . t)
-;;    (julia . t)
-;;    (python . t)
-;;    (jupyter . t)))
 (setq org-confirm-babel-evaluate nil)
-(use-package jupyter
-  :demand t
-  :after (:all org python))
-(setq org-babel-default-header-args:jupyter-python '((:results . "output")(:kernel . "python3")(:async . "yes")))
+;; (use-package jupyter
+;;   :demand t
+;;   :after (:all org python))
+;; (setq org-babel-default-header-args:jupyter-python '((:results . "output")(:kernel . "python3")(:async . "yes")))
 (setq org-clock-watch-play-sound-command-str "mpv")
 ;; (use-package org-gtd
 ;;   :after org
@@ -416,7 +439,7 @@ org-mode 中文行内分隔规格"
   :after org
   :init
   (map!
-   :map global-map "<f12>" #'org-transclusion-add
+   :map global-map "<f3>" #'org-transclusion-add
    :leader
    :prefix "n"
    :desc "Org Transclusion Mode" "t" #'org-transclusion-mode))
@@ -482,11 +505,6 @@ org-mode 中文行内分隔规格"
           org-roam-ui-update-on-save t
           org-roam-ui-open-on-start t))
 (use-package nov)
-(use-package elfeed-org
-  :init
-  (elfeed-org)
-  :config
-(setq rmh-elfeed-org-files (list (concat org-roam-directory "20221017215851-elfeed.org"))))
 (use-package calibredb
   :defer t
   :config
@@ -569,40 +587,8 @@ tasks."
   :config
   (setq org-roam-timestamps-minimum-gap 3600))
 
-(defun daviwil/org-roam-filter-by-tag (tag-name)
-  (lambda (node)
-    (member tag-name (org-roam-node-tags node))))
-
-(defun daviwil/org-roam-list-notes-by-tag (tag-name)
-  (mapcar #'org-roam-node-file
-          (seq-filter
-           (daviwil/org-roam-filter-by-tag tag-name)
-           (org-roam-node-list))))
-(add-hook 'org-mode-hook #'org-modern-mode)
-(setq org-modern-table nil)
-(menu-bar-mode -1)
-(tool-bar-mode -1)
-(scroll-bar-mode -1)
-(add-hook 'org-mode-hook #'auto-fill-mode)
-(after! org
-  (setq org-list-demote-modify-bullet
-        '(("+" . "-") ("-" . "+") ("*" . "+") ("1." . "a."))))
-(use-package org-modern-indent
-  ;; :straight or :load-path here, to taste
-  :hook
-  (org-indent-mode . org-modern-indent-mode))
 (setq! word-wrap-by-category t)
 
-  ;; with org-modern 与 doom org 分割线的冲突
-  (declare-function org-delete-all "ext:org-macs" (elts list))
-  (defun doom-themes-org-config-advice! ()
-    (setq
-     org-font-lock-extra-keywords
-     (org-delete-all
-      '(("^ *\\(-----+\\)$" 1 'org-meta-line))
-      org-font-lock-extra-keywords)))
-  (advice-add 'doom-themes-enable-org-fontification :after #'doom-themes-org-config-advice!)
-  (doom-themes-org-config)
 
 (defun fullscreen ()
   (interactive)
@@ -611,20 +597,18 @@ tasks."
 
 (global-set-key [f12] 'fullscreen)
 
-(use-package pangu-spacing
-  :init
-  (global-pangu-spacing-mode 1))
 (setq! +zen-window-divider-size 10)
 (defface org-bold
   '((t
      :weight bold))
   "Face for org-mode bold."
   :group 'org-faces )
+;; Org 加粗、下划线标记样式
 (setq org-emphasis-alist
       '(("*" org-bold)
         ("/" italic)
         ("_" underline)
-        ("=" (:background "maroon" :foreground "white")
+        ("=" ;(:background "maroon" :foreground "white")
          org-verbatim verbatim)
         ("~"  (:background "deep sky blue" :foreground "MidnightBlue")
          org-code verbatim)
@@ -636,10 +620,10 @@ tasks."
   (setq wallabag-host "https://pocket.samon6bl.xyz") ;; wallabag server host name
   (setq wallabag-username "samon6bl") ;; username
   (setq wallabag-password "lbl2272722") ;; password
-  (setq wallabag-clientid "2_3tie66m4ekg0kgwswogswkss04wog0wk0kw4k44k0sgw48ocwo") ;; created with API clients management
-  (setq wallabag-secret "5sfvv8sveewwwwoc84sookkwwgw8kw040c0o8sk00gsgkoco4k") ;; created with API clients management
+  (setq wallabag-clientid "3_3urz3edqgj8kckg4s48o8w4so000kw8c8c4c00wo408cggoggg") ;; created with API clients management
+  (setq wallabag-secret "6dhwf7c41bc48gs8kwwscgk8cskg040w00wwkk4000kw0oc0g8") ;; created with API clients management
   ;; (setq wallabag-db-file "~/OneDrive/Org/wallabag.sqlite") ;; optional, default is saved to ~/.emacs.d/.cache/wallabag.sqlite
-  ;; (run-with-timer 0 3540 'wallabag-request-token) ;; optional, auto refresh token, token should refresh every hour
+  (run-with-timer 0 3540 'wallabag-request-token) ;; optional, auto refresh token, token should refresh every hour
   )
 
 (defvar eldoc-posframe-buffer "*eldoc-posframe-buffer*"
@@ -693,7 +677,9 @@ tasks."
   )
 (use-package org-noter
   :config
-  (require 'org-noter-pdftools))
+  (require 'org-noter-pdftools)
+  (map! :leader :n "i" 'org-noter-insert-note)
+  )
 
 (use-package org-pdftools
   :hook (org-mode . org-pdftools-setup-link))
@@ -736,7 +722,7 @@ With a prefix ARG, remove start location."
   :bind (
          ("H-v" . org-media-note-hydra/body))  ;; 主功能入口
   :config
-  (setq org-media-note-screenshot-image-dir (concat org-directory "assets/"))  ;; 用于存储视频截图的目录
+  (setq org-media-note-screenshot-image-dir (concat org-directory "pages/image/"))  ;; 用于存储视频截图的目录
   (setq org-media-note-use-refcite-first t)  ;; 插入链接时，优先使用refcite链接
   )
 (use-package mpv)
@@ -759,7 +745,8 @@ With a prefix ARG, remove start location."
 (require 'pyim)
 ;; (require 'pyim-basedict)
 ;; (require 'pyim-cregexp-utils)
-
+(global-set-key (kbd "M-f") 'pyim-forward-word)
+(global-set-key (kbd "M-b") 'pyim-backward-word)
 (setq pyim-page-tooltip 'posframe)
 
 ;; 如果使用 popup page tooltip, 就需要加载 popup 包。
@@ -815,3 +802,411 @@ With a prefix ARG, remove start location."
                            (browse-url
                             ;; we get the "zotero:"-less url, so we put it back.
                             (format "zotero:%s" zpath))))
+(all-the-icons-completion-mode)
+(use-package all-the-icons)
+(use-package winner
+ :init
+ (winner-mode +1)
+ (define-key winner-mode-map (kbd "<M-k>") #'winner-undo)
+ (define-key winner-mode-map (kbd "<s-j>") #'winner-redo))
+(setq org-image-actual-width '(400))
+
+; C 语言lsp-mode 设置
+(use-package lsp-clangd
+  :init
+  (setq lsp-clangd-binary-path "/usr/local/opt/llvm/bin/clangd"))
+(after! lsp-clangd
+  (setq lsp-clients-clangd-args
+        '("-j=3"
+          "--background-index"
+          "--clang-tidy"
+          "--completion-style=detailed"
+          "--header-insertion=never"
+          "--header-insertion-decorators=0"))
+  (set-lsp-priority! 'clangd 2)
+  )
+(use-package org-excalidraw
+  :config
+  (setq org-excalidraw-directory (concat org-directory "pages/excalidraw/")))
+
+(after! org
+  (custom-set-faces!
+    '(outline-1 :weight extra-bold :height 1.4)
+    '(outline-2 :weight bold :height 1.15)
+    '(outline-3 :weight bold :height 1.12)
+    '(outline-4 :weight semi-bold :height 1.09)
+    '(outline-5 :weight semi-bold :height 1.06)
+    '(outline-6 :weight semi-bold :height 1.03)
+    '(outline-8 :weight semi-bold)
+    '(outline-9 :weight semi-bold))
+
+  (custom-set-faces!
+    '(org-document-title :height 1.2)))
+(map! :n "<f3>" #'imenu-list-smart-toggle)
+
+(org-remark-global-tracking-mode +1)
+
+;; Key-bind `org-remark-mark' to global-map so that you can call it
+;; globally before the library is loaded.
+
+(define-key global-map (kbd "C-c n m") #'org-remark-mark)
+
+;; The rest of keybidings are done only on loading `org-remark'
+(with-eval-after-load 'org-remark
+  (define-key org-remark-mode-map (kbd "C-c n o") #'org-remark-open)
+  (define-key org-remark-mode-map (kbd "C-c n ]") #'org-remark-view-next)
+  (define-key org-remark-mode-map (kbd "C-c n [") #'org-remark-view-prev)
+  (define-key org-remark-mode-map (kbd "C-c n r") #'org-remark-remove))
+
+
+;; (defun firemiles/display-inline-images ()
+;;   (interactive)
+;;   (condition-case nil
+;;       (org-display-inline-images)
+;;     (error nil)))
+
+;; (defun firemiles/org-insert-screenshot (fullname)
+;;   (interactive "P")
+;;   (setq default-name
+;;         (concat (file-name-directory (buffer-file-name))
+;;                 "imgs/"
+;;                 (file-name-base (buffer-file-name))
+;;                 "_"
+;;                 (format-time-string "%Y%m%d_%H%M%S")
+;;                 ".png"))
+
+;;   (setq fullname (read-from-minibuffer "Input image save path: " default-name))
+;;   (unless (file-exists-p (file-name-directory fullname))
+;;     (make-directory (file-name-directory fullname)))
+
+;;   (call-process "pngpaste" nil nil nil fullname)
+
+;;   (if (not (file-exists-p fullname))
+;;       (message "Can't find screenshot in clipboard!")
+
+;;     (insert "#+CAPTION:" (file-name-base fullname) "\n")
+;;     (insert "#+ATTR_ORG: :width 300px\n")
+;;     (insert (concat "[[file:" fullname "]]"))
+;;     (org-display-inline-images)))
+;;
+(add-hook 'latex-mode-hook #'xenops-mode)
+(add-hook 'LaTeX-mode-hook #'xenops-mode)
+(use-package jupyter)
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (julia . t)
+   (python . t)
+   (jupyter . t)))
+  (setq org-latex-packages-alist
+        '(("fontset=STKaiti,UTF8" "ctex" t))) ;;macnew
+  (setq org-preview-latex-default-process 'dvisvgm)
+  (setq org-preview-latex-process-alist
+        '((dvisvgm :programs
+                   ("xelatex" "dvisvgm")
+                   :description "xdv > svg" :message "you need to install the programs: xelatex and dvisvgm." :use-xcolor t :image-input-type "xdv" :image-output-type "svg" :image-size-adjust
+                   (1.0 . 1.0)
+                   :latex-compiler
+                   ("xelatex -no-pdf -interaction nonstopmode -output-directory %o %f")
+                   :image-converter
+                   ("dvisvgm %f -n -b min -c %S -o %O"))
+          (imagemagick :programs
+                       ("xelatex" "convert")
+                       :description "pdf > png" :message "you need to install the programs: xelatex and imagemagick." :use-xcolor t :image-input-type "pdf" :image-output-type "png" :image-size-adjust
+                       (1.0 . 1.0)
+                       :latex-compiler
+                       ("xelatex -interaction nonstopmode -output-directory %o %f")
+                       :image-converter
+                       ("convert -density %D -trim -antialias %f -quality 100 %O"))))
+(use-package org-fragtog
+  :after org
+  :hook
+  (org-mode . org-fragtog-mode))
+;; (setq url-proxy-services
+;; '(("no_proxy" . "^\\(localhost\\|10.*\\)")
+;; ("http" . "http://127.0.0.1:7890")
+;; ("https" . "http://127.0.0.1:7890")))
+
+(use-package elfeed-goodies
+  :init
+  (elfeed-goodies/setup))
+
+(use-package elfeed-org
+  :init
+  (elfeed-org)
+  :config
+(setq rmh-elfeed-org-files (list (concat org-roam-directory "20221017215851-elfeed.org"))))
+
+
+(use-package ox-freemind)
+
+(use-package doom-modeline
+  :init
+  (setq doom-modeline-icon t)
+  (setq doom-modeline-major-mode-icon t)
+  (setq doom-modeline-major-mode-color-icon t))
+(with-eval-after-load "org"
+  (require 'ob-html)
+  (org-babel-html-enable-open-src-block-result-temporary))
+
+(use-package org-preview-html
+  :init
+  (setq org-preview-html-viewer 'eww))
+
+(use-package websocket-bridge)
+
+(use-package org-roam-search
+    :after (org-roam)
+    ;:custom
+    ;(org-roam-search-default-tags '("stub"))
+    :bind (:map global-map
+          (("C-c n f" . org-roam-search-node-find))
+            :map org-mode-map
+          (("C-c n i" . org-roam-search-node-insert)))
+    )
+(add-hook 'org-clock-in-hook (lambda () (call-process "/usr/bin/osascript" nil 0 nil "-e" (concat "tell application \"org-clock-statusbar\" to clock in \"" (replace-regexp-in-string "\"" "\\\\\"" org-clock-current-task) "\""))))
+(add-hook 'org-clock-out-hook (lambda () (call-process "/usr/bin/osascript" nil 0 nil "-e" "tell application \"org-clock-statusbar\" to clock out")))
+(use-package mixed-pitch
+  :hook
+  ;; If you want it in all text modes:
+  (text-mode . mixed-pitch-mode))
+(use-package sort-tab
+  :init
+  (sort-tab-mode 1)
+  :config
+(global-set-key (kbd "s-1") 'sort-tab-select-visible-tab)
+(global-set-key (kbd "s-2") 'sort-tab-select-visible-tab)
+(global-set-key (kbd "s-3") 'sort-tab-select-visible-tab)
+(global-set-key (kbd "s-4") 'sort-tab-select-visible-tab)
+(global-set-key (kbd "s-5") 'sort-tab-select-visible-tab)
+(global-set-key (kbd "s-6") 'sort-tab-select-visible-tab)
+(global-set-key (kbd "s-7") 'sort-tab-select-visible-tab)
+(global-set-key (kbd "s-8") 'sort-tab-select-visible-tab)
+(global-set-key (kbd "s-9") 'sort-tab-select-visible-tab)
+(global-set-key (kbd "s-0") 'sort-tab-select-visible-tab)
+(global-set-key (kbd "s-Q") 'sort-tab-close-all-tabs)
+(global-set-key (kbd "s-q") 'sort-tab-close-mode-tabs)
+(global-set-key (kbd "C-;") 'sort-tab-close-current-tab))
+(setq org-superstar-headline-bullets-list '("◉" "⁑" "⁂" "❖" "✮" "✱" "✸")
+      org-superstar-prettify-item-bullets nil)
+(add-hook 'org-mode-hook #'org-superstar-mode)
+
+
+
+;; hugo 导出
+(use-package easy-hugo
+:init
+(setq easy-hugo-basedir "~/blog/blog/public/")
+(setq easy-hugo-url "https://www.samon6bl.xyz/")
+(setq easy-hugo-root "/home/blog/")
+(setq easy-hugo-previewtime "300"))
+(use-package ox-hugo
+  :init
+  (setq org-hugo-base-dir "~/blog/blog/")
+  (setq org-hugo-section "blog"))
+
+
+(use-package calfw
+  :init
+  (require 'calfw-org)
+  :config
+  (setq cfw:org-overwrite-default-keybinding t))
+;; (use-package org-super-agenda
+;;   :init
+;;   (add-hook 'org-agenda-mode-hook #'org-super-agenda-mode)
+;;   :config
+;;   (let ((org-agenda-span 'day)
+;;       (org-super-agenda-groups
+;;        '((:name "Time grid items in all-uppercase with RosyBrown1 foreground"
+;;                 :time-grid t
+;;                 :transformer (--> it
+;;                                   (upcase it)
+;;                                   (propertize it 'face '(:foreground "RosyBrown1"))))
+;;          (:name "Priority >= C items underlined, on black background"
+;;                 :face (:background "black" :underline t)
+;;                 :not (:priority>= "C")
+;;                 :order 100))))
+;;   (org-agenda nil "a")))
+(use-package orderless
+  :init
+  ;; Configure a custom style dispatcher (see the Consult wiki)
+  ;; (setq orderless-style-dispatchers '(+orderless-dispatch)
+  ;;       orderless-component-separator #'orderless-escapable-split-on-space)
+  (setq completion-styles '(orderless basic)
+        completion-category-defaults nil
+        completion-category-overrides '((file (styles partial-completion)))))
+
+(use-package! svg-tag-mode
+  :hook (org-mode . svg-tag-mode)
+  :config
+  (defun mk/svg-checkbox-empty()
+    (let* ((svg (svg-create 14 14)))
+      (svg-rectangle svg 0 0 14 14 :fill 'white :rx 2 :stroke-width 2.5 :stroke-color 'black)
+      (svg-image svg :ascent 'center)
+      ))
+
+  (defun mk/svg-checkbox-filled()
+    (let* ((svg (svg-create 14 14)))
+      (svg-rectangle svg 0 0 14 14 :fill "#FFFFFF" :rx 2)
+      (svg-polygon svg '((5.5 . 11) (12 . 3.5) (11 . 2) (5.5 . 9) (1.5 . 5) (1 . 6.5))
+                   :stroke-color 'black :stroke-width 1 :fill 'black)
+      (svg-image svg :ascent 'center)
+      ))
+  (defun mk/svg-checkbox-toggle()
+    (interactive)
+    (save-excursion
+      (let* ((start-pos (line-beginning-position))
+             (end-pos (line-end-position))
+             (text (buffer-substring-no-properties start-pos end-pos))
+             (case-fold-search t)  ; Let X and x be the same in search
+             )
+        (beginning-of-line)
+        (cond ((string-match-p "\\[X\\]" text)
+               (progn
+                 (re-search-forward "\\[X\\]" end-pos)
+                 (replace-match "[ ]")))
+              ((string-match-p "\\[ \\]" text)
+               (progn
+                 (search-forward "[ ]" end-pos)
+                 (replace-match "[X]")))
+              ))))
+
+  (defun svg-progress-percent (value)
+    (svg-image (svg-lib-concat
+                (svg-lib-progress-bar (/ (string-to-number value) 100.0)
+                                      nil :margin 0 :stroke 2 :radius 3 :padding 2 :width 11)
+                (svg-lib-tag (concat value "%")
+                             nil :stroke 0 :margin 0)) :ascent 'center))
+
+  (defun svg-progress-count (value)
+    (let* ((seq (mapcar #'string-to-number (split-string value "/")))
+           (count (float (car seq)))
+           (total (float (cadr seq))))
+      (svg-image (svg-lib-concat
+                  (svg-lib-progress-bar (/ count total) nil
+                                        :margin 0 :stroke 2 :radius 3 :padding 2 :width 11)
+                  (svg-lib-tag value nil
+                               :stroke 0 :margin 0)) :ascent 'center)))
+
+  (defconst date-re "[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}")
+  (defconst time-re "[0-9]\\{2\\}:[0-9]\\{2\\}")
+  (defconst day-re "[A-Za-z]\\{3\\}")
+  (defconst day-time-re (format "\\(%s\\)? ?\\(%s\\)?" day-re time-re))
+
+  (setq svg-tag-action-at-point 'edit)
+
+  (setq svg-lib-icon-collections
+        `(("bootstrap" .
+           "https://icons.getbootstrap.com/assets/icons/%s.svg")
+          ("simple" .
+           "https://raw.githubusercontent.com/simple-icons/simple-icons/develop/icons/%s.svg")
+          ("material" .
+           "https://raw.githubusercontent.com/Templarian/MaterialDesign/master/svg/%s.svg")
+          ("octicons" .
+           "https://raw.githubusercontent.com/primer/octicons/master/icons/%s-24.svg")
+          ("boxicons" .
+           "https://boxicons.com/static/img/svg/regular/bx-%s.svg")))
+
+  (setq svg-tag-tags
+        `(
+          ;; Task priority
+          ("\\[#[A-Z]\\]" . ( (lambda (tag)
+                                (svg-tag-make tag :face 'org-priority
+                                              :beg 2 :end -1 :margin 0))))
+
+          ;; Progress
+          ("\\(\\[[0-9]\\{1,3\\}%\\]\\)" . ((lambda (tag)
+                                              (svg-progress-percent (substring tag 1 -2)))))
+          ("\\(\\[[0-9]+/[0-9]+\\]\\)" . ((lambda (tag)
+                                            (svg-progress-count (substring tag 1 -1)))))
+
+          ;; Checkbox
+          ("\\[ \\]" . ((lambda (_tag) (mk/svg-checkbox-empty))
+                        (lambda () (interactive) (mk/svg-checkbox-toggle))
+                        "Click to toggle."
+                        ))
+          ("\\(\\[[Xx]\\]\\)" . ((lambda (_tag) (mk/svg-checkbox-filled))
+                                 (lambda () (interactive) (mk/svg-checkbox-toggle))
+                                 "Click to toggle."))
+
+          ;; Active date (with or without day name, with or without time)
+          (,(format "\\(<%s>\\)" date-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :beg 1 :end -1 :margin 0))))
+          (,(format "\\(<%s \\)%s>" date-re day-time-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :beg 1 :inverse nil :crop-right t :margin 0))))
+          (,(format "<%s \\(%s>\\)" date-re day-time-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :end -1 :inverse t :crop-left t :margin 0))))
+
+          ;; Inactive date  (with or without day name, with or without time)
+          (,(format "\\(\\[%s\\]\\)" date-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :beg 1 :end -1 :margin 0 :face 'org-date))))
+          (,(format "\\(\\[%s \\)%s\\]" date-re day-time-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :beg 1 :inverse nil :crop-right t :margin 0 :face 'org-date))))
+          (,(format "\\[%s \\(%s\\]\\)" date-re day-time-re) .
+           ((lambda (tag)
+              (svg-tag-make tag :end -1 :inverse t :crop-left t :margin 0 :face 'org-date))))
+
+          ;; Keywords
+          ("TODO" . ((lambda (tag) (svg-tag-make tag :height 0.8 :inverse t
+                                                 :face 'org-todo :margin 0 :radius 5))))
+          ("WORK" . ((lambda (tag) (svg-tag-make tag :height 0.8
+                                                 :face 'org-todo :margin 0 :radius 5))))
+          ("DONE" . ((lambda (tag) (svg-tag-make tag :height 0.8 :inverse t
+                                                 :face 'org-done :margin 0 :radius 5))))
+
+          ("FIXME\\b" . ((lambda (tag) (svg-tag-make "FIXME" :face 'org-todo :inverse t :margin 0 :crop-right t))))
+
+          ;; beautify pagebreak in orgmode
+          ("\\\\pagebreak" . ((lambda (tag) (svg-lib-icon "file-break" nil :collection "bootstrap"
+                                                          :stroke 0 :scale 1 :padding 0))))
+
+          )))
+
+(add-hook! org-mode :append
+            #'visual-line-mode
+            #'+org-pretty-mode  ;; Display UTF-8 symbols instead of plain text. Set org-hide-emphasis-markers t.
+            #'variable-pitch-mode
+            #'mixed-pitch-mode)  ;; Allow mixed fonts in a buffer, particularly useful for mixing source code and prose blocks in the same document.
+(after! org
+  (setq mixed-pitch-variable-pitch-cursor nil)
+  (setq mixed-pitch-set-height t))
+
+(after! mixed-pitch
+  (setq mixed-pitch-set-height t))
+(add-hook! mixed-pitch-mode #'solaire-mode-reset)
+
+(setq-default prettify-symbols-alist '(("#+BEGIN_SRC" . "†")
+                                        ("#+END_SRC" . "†")
+                                        ("#+begin_src" . "†")
+                                        ("#+end_src" . "†")
+                                        (">=" . "≥")
+                                        ("=>" . "⇨")
+                                        ("lambda"  . "?λ")
+                                        ("#+begin_quote" . "?")
+                                        ("#+end_quote" . "?")
+                                        ("#+RESULTS:" . "?")))
+  (setq prettify-symbols-unprettify-at-point 'right-edge)
+  (add-hook 'org-mode-hook 'prettify-symbols-mode)
+
+;; (use-package eaf
+;;   :load-path "~/.emacs.d/site-lisp/emacs-application-framework"
+;;   :custom
+;;   ; See https://github.com/emacs-eaf/emacs-application-framework/wiki/Customization
+;;   (eaf-browser-continue-where-left-off t)
+;;   (eaf-browser-enable-adblocker t)
+;;   (browse-url-browser-function 'eaf-open-browser)
+;;   :config
+;;   (require 'eaf-demo)
+;;   (require 'eaf-pdf-viewer)
+;;   (require 'eaf-browser)
+;;   (require 'eaf-camera)
+;;   (defalias 'browse-web #'eaf-open-browser)
+;;   (eaf-bind-key scroll_up "C-n" eaf-pdf-viewer-keybinding)
+;;   (eaf-bind-key scroll_down "C-p" eaf-pdf-viewer-keybinding)
+;; (eaf-bind-key take_photo "p" eaf-camera-keybinding)
+;;   (eaf-bind-key nil "M-q" eaf-browser-keybinding)) ;; unbind, see more in the Wiki

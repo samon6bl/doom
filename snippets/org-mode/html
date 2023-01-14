@@ -1,0 +1,9 @@
+# -*- mode: snippet -*-
+# name: html
+# uuid:
+# key: html
+# condition: t
+# --
+#+begin_src html :tangle "html.html"
+$1
+#+end_src

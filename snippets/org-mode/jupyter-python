@@ -1,7 +1,7 @@
 # -*- mode: snippet -*-
-# name: jupyter-python
-# key: jp
+# name: org-babel python
+# key: py
 # --
-#+begin_src jupyter-python
+#+begin_src python :tangle "python.py"
 $1
 #+end_src
